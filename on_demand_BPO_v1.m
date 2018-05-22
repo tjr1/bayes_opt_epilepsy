@@ -22,7 +22,7 @@ function varargout = on_demand_BPO_v1(varargin)
 
 % Edit the above text to modify the response to help on_demand_BPO_v1
 
-% Last Modified by GUIDE v2.5 20-May-2018 22:03:14
+% Last Modified by GUIDE v2.5 22-May-2018 11:05:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -212,6 +212,9 @@ end
 try
     set(handles.ET_SaveName,'String',struc.ET_SaveName);
 end
+try
+    set(handles.ET_stim_scaling,'String',struc.ET_stim_scaling);
+end
 
 guidata(hObject,handles);
 
@@ -268,6 +271,8 @@ struc.ET_threshold_pos=get(handles.ET_threshold_pos,'String');
 struc.ET_threshold_neg=get(handles.t_thresh,'String');
 struc.ET_min_width=get(handles.T_min_width,'String');
 struc.ET_min_spikes_per_two_s=get(handles.T_min_spikes_per_two_s,'String');
+
+struc.ET_stim_scaling=get(handles.ET_stim_scaling,'String');
 
 save([path '\settings.mat'], 'struc');
 
@@ -924,10 +929,6 @@ fast_slow_ratio_thresh = str2num(get(handles.ET_fast_slow_ratio_thresh,'String')
 
 fast_slow_ratio = fast_int(n_read,:)./slow_int(n_read,:);
 
-if str2num(get(handles.ET_open_loop,'String')) == 1
-    fast_slow_ratio = 1*randn(1,n_ch_out);
-end
-
 disp(['fast/slow ratio = ' num2str(fast_slow_ratio)])
 
 fast_slow_ratio_trigger = fast_slow_ratio > fast_slow_ratio_thresh;
@@ -952,9 +953,7 @@ for i_ch = 1:n_ch_out
     Settings.req_width = req_width_vec(i_ch);
     
     [posspikes,negspikes,posspikes_narrow,negspikes_narrow,posspikes_wide,negspikes_wide]=SpikeFinder(detect_data(:,i_ch),fs_deci,Settings,DoDisplay);
-    num_wide_spikes = size(negspikes,1)+size(posspikes,1)
-%     negspikes_wide_sz = size(negspikes_wide)
-%     negspikes_wide=negspikes_wide
+
     if size(posspikes_wide,1)>0
         plot(plot_handle, detect_time_deci(posspikes_wide(:,1)),channel_spacing*(seizure_detection_ch_vec(i_ch)+1)+posspikes_wide(:,2),'*r')
     end
@@ -987,6 +986,11 @@ mf.spikes_trigger(n_read,:) = spikes_trigger;
 %% seizue starts
 % Seizure_On(n_read,:) = and(fast_slow_ratio_trigger, spikes_trigger); % add additional logic of triggers here 
 Seizure_On(n_read,:) = spikes_trigger; % add additional logic of triggers here 
+
+if str2num(get(handles.ET_open_loop,'String')) == 1
+    Seizure_On(n_read,:) = rand(1,n_ch_out)<.1; % 10% chance of  seizure per chunk
+end
+
 mf.Seizure_On(n_read,:) = Seizure_On(n_read,:);
 
 disp(['Seizure_On = ' num2str(Seizure_On(n_read,:))])
@@ -1841,4 +1845,27 @@ end
 
 if nargout>1,
     pks=x(locs);
+end
+
+
+
+function ET_stim_scaling_Callback(hObject, eventdata, handles)
+% hObject    handle to ET_stim_scaling (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of ET_stim_scaling as text
+%        str2double(get(hObject,'String')) returns contents of ET_stim_scaling as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function ET_stim_scaling_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ET_stim_scaling (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
