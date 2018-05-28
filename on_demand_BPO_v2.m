@@ -1,35 +1,35 @@
-function varargout = on_demand_BPO_v1(varargin)
-% ON_DEMAND_BPO_V1 MATLAB code for on_demand_BPO_v1.fig
-%      ON_DEMAND_BPO_V1, by itself, creates a new ON_DEMAND_BPO_V1 or raises the existing
+function varargout = on_demand_BPO_v2(varargin)
+% ON_DEMAND_BPO_V2 MATLAB code for on_demand_BPO_v2.fig
+%      ON_DEMAND_BPO_V2, by itself, creates a new ON_DEMAND_BPO_V2 or raises the existing
 %      singleton*.
 %
-%      H = ON_DEMAND_BPO_V1 returns the handle to a new ON_DEMAND_BPO_V1 or the handle to
+%      H = ON_DEMAND_BPO_V2 returns the handle to a new ON_DEMAND_BPO_V2 or the handle to
 %      the existing singleton*.
 %
-%      ON_DEMAND_BPO_V1('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in ON_DEMAND_BPO_V1.M with the given input arguments.
+%      ON_DEMAND_BPO_V2('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in ON_DEMAND_BPO_V2.M with the given input arguments.
 %
-%      ON_DEMAND_BPO_V1('Property','Value',...) creates a new ON_DEMAND_BPO_V1 or raises the
+%      ON_DEMAND_BPO_V2('Property','Value',...) creates a new ON_DEMAND_BPO_V2 or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before on_demand_BPO_v1_OpeningFcn gets called.  An
+%      applied to the GUI before on_demand_BPO_v2_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to on_demand_BPO_v1_OpeningFcn via varargin.
+%      stop.  All inputs are passed to on_demand_BPO_v2_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help on_demand_BPO_v1
+% Edit the above text to modify the response to help on_demand_BPO_v2
 
-% Last Modified by GUIDE v2.5 22-May-2018 11:05:55
+% Last Modified by GUIDE v2.5 28-May-2018 12:59:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @on_demand_BPO_v1_OpeningFcn, ...
-                   'gui_OutputFcn',  @on_demand_BPO_v1_OutputFcn, ...
+                   'gui_OpeningFcn', @on_demand_BPO_v2_OpeningFcn, ...
+                   'gui_OutputFcn',  @on_demand_BPO_v2_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,15 +44,15 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before on_demand_BPO_v1 is made visible.
-function on_demand_BPO_v1_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before on_demand_BPO_v2 is made visible.
+function on_demand_BPO_v2_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to on_demand_BPO_v1 (see VARARGIN)
+% varargin   command line arguments to on_demand_BPO_v2 (see VARARGIN)
 
-% Choose default command line output for on_demand_BPO_v1
+% Choose default command line output for on_demand_BPO_v2
 
 clc
 
@@ -66,12 +66,12 @@ handles.output = hObject;
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes on_demand_BPO_v1 wait for user response (see UIRESUME)
+% UIWAIT makes on_demand_BPO_v2 wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = on_demand_BPO_v1_OutputFcn(hObject, eventdata, handles) 
+function varargout = on_demand_BPO_v2_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -288,6 +288,8 @@ if license('test','image_acquisition_toolbox')
     imaqreset
 end
 
+rng(17);
+
 %% 
 
 global q
@@ -346,7 +348,7 @@ s.Rate = fs;
 s.IsContinuous = true;
 
 global out_chunk in_chunk
-out_chunk = 1; % these are very long, 1/2 second would be better, but computation time of bayes opt is too slow to fit inside the loop
+out_chunk = 0.5; % these are very long, 1/2 second would be better, but computation time of bayes opt is too slow to fit inside the loop
 in_chunk = 1;
 
 n_ch_out = str2num(get(handles.ET_n_ch_out,'String'));
@@ -381,6 +383,7 @@ end
 %%
 %%
 global n_read fast_int slow_int Seizure_On Seizure_Off Seizure_Count Seizure_Duration stim_amp stim_freq Seizure_Start_Ind next_freq next_amp spike_count_history
+global duration_amp_freq 
 n_read = 1;
 fast_int = zeros(1,n_ch_out);
 slow_int = zeros(1,n_ch_out);
@@ -389,6 +392,11 @@ Seizure_Off = zeros(1,n_ch_out);
 Seizure_Count = zeros(1,n_ch_out);
 Seizure_Duration = zeros(1,n_ch_out);
 Seizure_Start_Ind = zeros(1,n_ch_out);
+duration_amp_freq = zeros(1,3*n_ch_out);   
+
+global pos_spike_count neg_spike_count 
+pos_spike_count = zeros(1,n_ch_out);
+neg_spike_count = zeros(1,n_ch_out);
 
 spike_count_history = zeros(fix(2*1/in_chunk),n_ch_out,2); % giving it an extra dimension to initialize the file
 fast_slow_ratio_trigger = zeros(1,n_ch_out,'logical');
@@ -455,7 +463,7 @@ for i_ch_out = 1:n_ch_out
     %         plot(res,@plotObjectiveModel) %  A_BPO_vis, would be good to make these into a video
             range1 = str2num(get(handles.ET_FrequencyRange,'String'));
             range2 = str2num(get(handles.ET_AmplitudeRange,'String'));
-            plot_bo(res, range1, range2, [0 5], 35)
+            plot_bo(res, range1, range2, [0 40], 15)
             toc
 
     %         eval(['res_ch_' num2str(i_ch_out) '_sz_' num2str(Seizure_Count(1,i_ch_out)) '= res;'])
@@ -795,11 +803,15 @@ function Process_Plot_Save(src,event,mf,plot_handle,n_cams,vid, seizure_detectio
 
 global stim_flag
 
+global duration_amp_freq 
+
 global q
 
 global n_read fast_int slow_int Seizure_On Seizure_Off Seizure_Count Seizure_Duration stim_amp stim_freq Seizure_Start_Ind next_freq next_amp
 
 global in_chunk spike_count_history
+
+global pos_spike_count neg_spike_count
 
 n_read = n_read+1;
 
@@ -944,6 +956,8 @@ req_width_vec = str2num(get(handles.ET_min_width,'String')); %Spike is considere
 
 DoDisplay = 0;
 
+spike_count_history = circshift(spike_count_history,-1); % shift values
+
 for i_ch = 1:n_ch_out
     Settings.dist_pos = dist_pos_vec(i_ch);
     Settings.dist_neg = dist_neg_vec(i_ch);
@@ -954,6 +968,27 @@ for i_ch = 1:n_ch_out
     
     [posspikes,negspikes,posspikes_narrow,negspikes_narrow,posspikes_wide,negspikes_wide]=SpikeFinder(detect_data(:,i_ch),fs_deci,Settings,DoDisplay);
 
+    n_spikes_this_chunk = size(negspikes_wide,1)+size(posspikes_wide,1);
+    spike_count_history(end,i_ch) = n_spikes_this_chunk;
+    
+    if not(isempty(posspikes_wide))
+        pos_spike_times = detect_time_deci(posspikes_wide(:,1));
+        pos_spike_val = posspikes_wide(:,2);
+        n_pos_spike(1,i_ch) = length(pos_spike_times);
+        mf.pos_spike_times(pos_spike_count(1,i_ch)+(1:n_pos_spike(1,i_ch)),i_ch) = pos_spike_times;
+        mf.pos_spike_val(pos_spike_count(1,i_ch)+(1:n_pos_spike(1,i_ch)),i_ch) = pos_spike_val;
+        pos_spike_count(1,i_ch) = pos_spike_count(1,i_ch) + n_pos_spike(1,i_ch);
+    end
+
+    if not(isempty(negspikes_wide))
+        neg_spike_times = detect_time_deci(negspikes_wide(:,1));
+        neg_spike_val = negspikes_wide(:,2);
+        n_neg_spike(1,i_ch) = length(neg_spike_times); 
+        mf.neg_spike_times(neg_spike_count(1,i_ch)+(1:n_neg_spike(1,i_ch)),i_ch) = neg_spike_times;
+        mf.neg_spike_val(neg_spike_count(1,i_ch)+(1:n_neg_spike(1,i_ch)),i_ch) = neg_spike_val;
+        neg_spike_count(1,i_ch) = neg_spike_count(1,i_ch) + n_neg_spike(1,i_ch);
+    end
+    
     if size(posspikes_wide,1)>0
         plot(plot_handle, detect_time_deci(posspikes_wide(:,1)),channel_spacing*(seizure_detection_ch_vec(i_ch)+1)+posspikes_wide(:,2),'*r')
     end
@@ -963,16 +998,14 @@ for i_ch = 1:n_ch_out
 end
 hold(plot_handle, 'off')
 
-n_spikes_this_chunk = size(negspikes_wide,1)+size(posspikes_wide,1);
-spike_count_history = circshift(spike_count_history,-1); % shift values
-spike_count_history(end) = n_spikes_this_chunk;
-
 mf.spike_count_history(:,:,n_read) = spike_count_history;
 
 min_spikes_per_two_s_vec = str2num(get(handles.ET_min_spikes_per_two_s,'String'));
 
 for i_ch = 1:n_ch_out
-    if sum(spike_count_history(:,i_ch))>min_spikes_per_two_s_vec(i_ch)
+    s_spikes = sum(spike_count_history(:,i_ch))
+    
+    if sum(spike_count_history(:,i_ch))>=min_spikes_per_two_s_vec(i_ch)
         spikes_trigger(1,i_ch) = true;
     else
         spikes_trigger(1,i_ch) = false;
@@ -1007,27 +1040,33 @@ mf.Seizure_Off(n_read,:) = Seizure_Off(n_read,:);
 disp(['Seizure_Off = ' num2str(Seizure_Off(n_read,:))])
 
 %% count seizures
-Seizure_Count = Seizure_Count + Seizure_Off(n_read,:);
+Seizure_Count = Seizure_Count + stim_flag;
+for i_ch_out = 1:n_ch_out
+    if stim_flag(i_ch_out)
+        stim_freq(Seizure_Count(1,i_ch_out),i_ch_out) = next_freq(1,i_ch_out);
+        stim_amp(Seizure_Count(1,i_ch_out),i_ch_out) = next_amp(1,i_ch_out);
+
+        mf.stim_freq(Seizure_Count(1,i_ch_out),i_ch_out) = stim_freq(Seizure_Count(1,i_ch_out),i_ch_out);
+        ms_stim_amp(Seizure_Count(1,i_ch_out),i_ch_out) = stim_amp(Seizure_Count(1,i_ch_out),i_ch_out);
+        
+        duration_amp_freq(Seizure_Count(1,i_ch_out),(i_ch_out-1)*3+2) = stim_amp(Seizure_Count(1,i_ch_out),i_ch_out);
+        duration_amp_freq(Seizure_Count(1,i_ch_out),(i_ch_out-1)*3+3) = stim_freq(Seizure_Count(1,i_ch_out),i_ch_out);
+        mf.duration_amp_freq(Seizure_Count(1,i_ch_out),(i_ch_out-1)*3+2) = stim_amp(Seizure_Count(1,i_ch_out),i_ch_out);
+        mf.duration_amp_freq(Seizure_Count(1,i_ch_out),(i_ch_out-1)*3+3) = stim_freq(Seizure_Count(1,i_ch_out),i_ch_out);
+    end
+end
 
 disp(['Seizure_Count = ' num2str(Seizure_Count)])
 
 %% determine seizure duration
-
-time_per_read = in_chunk; % hard coded half second, should be connected to listenerj
-
-
-% Seizure_Duration stim_amp stim_freq
 for i_ch_out = 1:n_ch_out
     if Seizure_Off(n_read,i_ch_out)==1
         % determine seizure length
-        Seizure_Duration(Seizure_Count(1,i_ch_out),i_ch_out) = time_per_read * (n_read- Seizure_Start_Ind(1,i_ch_out));
+        Seizure_Duration(Seizure_Count(1,i_ch_out),i_ch_out) = in_chunk * (n_read- Seizure_Start_Ind(1,i_ch_out));
         mf.Seizure_Duration(Seizure_Count(1,i_ch_out),i_ch_out) = Seizure_Duration(Seizure_Count(1,i_ch_out),i_ch_out);
         
-        stim_freq(Seizure_Count(1,i_ch_out),i_ch_out) = next_freq(1,i_ch_out);
-        stim_amp(Seizure_Count(1,i_ch_out),i_ch_out) = next_amp(1,i_ch_out);
-        
-        mf.stim_freq(Seizure_Count(1,i_ch_out),i_ch_out) = stim_freq(Seizure_Count(1,i_ch_out),i_ch_out);
-        ms_stim_amp(Seizure_Count(1,i_ch_out),i_ch_out) = stim_amp(Seizure_Count(1,i_ch_out),i_ch_out);
+        duration_amp_freq(Seizure_Count(1,i_ch_out),(i_ch_out-1)*3+1) = Seizure_Duration(Seizure_Count(1,i_ch_out),i_ch_out);
+        mf.duration_amp_freq(Seizure_Count(1,i_ch_out),(i_ch_out-1)*3+1) = Seizure_Duration(Seizure_Count(1,i_ch_out),i_ch_out);
         
         %% Bayes Opt for next stimulation parameters
         InitialObjective = Seizure_Duration(1:Seizure_Count(1,i_ch_out),i_ch_out);
@@ -1040,7 +1079,6 @@ for i_ch_out = 1:n_ch_out
     end
 end
 
-% for i_ch_out = 1:n_ch_out
 for i_ch_out = 1:n_ch_out
     [res, gotMsg] = poll(q{1,i_ch_out}, .05); % should save each res
 %     gotMsg=gotMsg
@@ -1052,7 +1090,7 @@ for i_ch_out = 1:n_ch_out
 %         plot(res,@plotObjectiveModel) %  A_BPO_vis, would be good to make these into a video
         range1 = str2num(get(handles.ET_FrequencyRange,'String'));
         range2 = str2num(get(handles.ET_AmplitudeRange,'String'));
-        plot_bo(res, range1, range2, [0 10], 35)
+        plot_bo(res, range1, range2, [0 40], 15)
         toc
         
 %         eval(['res_ch_' num2str(i_ch_out) '_sz_' num2str(Seizure_Count(1,i_ch_out)) '= res;'])
@@ -1071,6 +1109,9 @@ end
 disp('Seizure_Duration = ')
 disp(num2str(Seizure_Duration))
 
+disp('duration_amp_freq = ')
+disp(num2str(duration_amp_freq))
+
 function BO_wrapper(opt_freq, opt_amp, InitialX, InitialObjective, que)
 
 res = bayesopt(@place_holder_fcn,[opt_freq, opt_amp],'InitialX',InitialX,'InitialObjective',InitialObjective, 'MaxObjectiveEvaluations', 1, 'PlotFcn', [], 'AcquisitionFunctionName', 'expected-improvement-plus', 'ExplorationRatio', .4);
@@ -1086,6 +1127,8 @@ global fs
 global out_chunk
 
 global next_freq next_amp
+
+global Seizure_Count
 
 global stim_remaining
 
@@ -1118,7 +1161,7 @@ if any(stim_remaining>0)
             hold on
             ylim(handles.A_NextStim,[-10 n_ch_out*10])
             
-            stim_remaining(i_ch_out) = stim_remaining(i_ch_out)-1;
+            stim_remaining(i_ch_out) = stim_remaining(i_ch_out)-out_chunk;
         end
     end
     hold off

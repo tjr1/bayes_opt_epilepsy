@@ -2,7 +2,7 @@ close all
 clear
 clc
 
-start_time = 300;
+start_time = 321;
 channels = [1, 3];
 
 % daqreset
