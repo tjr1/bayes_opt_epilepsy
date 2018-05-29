@@ -348,7 +348,7 @@ s.Rate = fs;
 s.IsContinuous = true;
 
 global out_chunk in_chunk
-out_chunk = 1.5; % these are very long, 1/2 second would be better, but computation time of bayes opt is too slow to fit inside the loop
+out_chunk = 0.5; % these are very long, 1/2 second would be better, but computation time of bayes opt is too slow to fit inside the loop
 in_chunk = 1;
 
 n_ch_out = str2num(get(handles.ET_n_ch_out,'String'));
@@ -415,6 +415,7 @@ data=zeros(1,1+n_ch_in); % column 1 is time stamps, next n_ch_in columns are the
 detect_data = zeros(1,1+n_ch_out);
 
 save_mat_path = [save_folder '\' save_name '.mat']
+handles.save_mat_path = save_mat_path;
 save(save_mat_path,'data','detect_data','fs','-v7.3','-nocompression')
 
 for i_cam = 1:n_cams
@@ -534,6 +535,10 @@ function PB_Stop_Callback(hObject, eventdata, handles)
 
 s = handles.s;
 s.stop()
+
+global res_cell
+
+save(handles.save_mat_path,'res_cell','-append')
 
 vid = handles.vid;
 n_cams = handles.n_cams;
@@ -807,6 +812,8 @@ global n_read fast_int slow_int Seizure_On Seizure_Off Seizure_Count Seizure_Dur
 global in_chunk spike_count_history
 
 global pos_spike_count neg_spike_count
+
+global res_cell
 
 n_read = n_read+1;
 
@@ -1088,11 +1095,13 @@ for i_ch_out = 1:n_ch_out
         plot_bo_1D(res, range1, [0 40], 50)
         toc
         
-        res_name = ['res_ch_' num2str(i_ch_out) '_sz_' num2str(Seizure_Count(1,i_ch_out))];
+%         res_name = ['res_ch_' num2str(i_ch_out) '_sz_' num2str(Seizure_Count(1,i_ch_out))];
 %         eval([res_name '= res;']) % this is sometimes too slow and breaks stops the whole works, longer out_chunk helps
 %         save(save_mat_path,['res_ch_' num2str(i_ch_out) '_sz_' num2str(Seizure_Count(1,i_ch_out))],'-nocompression','-append') % this is sometimes too slow and breaks stops the whole works
         
-        f = parfeval(@save_wrapper,0,save_mat_path,res_name,res);   
+%         f = parfeval(@save_wrapper,0,save_mat_path,res_name,res);
+
+        res_cell{Seizure_Count(1,i_ch_out),i_ch_out} = res;
         
         next_freq(1,i_ch_out) = res.NextPoint{1,1};
         next_amp(1,i_ch_out) = str2num(get(handles.ET_AmplitudeRange,'String'));
