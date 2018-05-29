@@ -436,7 +436,7 @@ clear data
 mf = matfile(save_mat_path,'Writable',true);
 
 %% specify optimized variables
-opt_freq = optimizableVariable('frequency',str2num(get(handles.ET_FrequencyRange,'String'))); % Hz
+opt_freq = optimizableVariable('frequency',str2num(get(handles.ET_FrequencyRange,'String')),'Transform','log'); % Hz
 % opt_amp = optimizableVariable('amplitude',str2num(get(handles.ET_AmplitudeRange,'String'))); % Volts?
 opt_amp = [];
 
@@ -1428,21 +1428,21 @@ dim1 = linspace(range1(1), range1(2), n_points)';
 
 [FPred, sigma] = predictObjective(res,table(dim1,'VariableNames',{'frequency'}));
 
-plot(dim1,FPred)
+semilogx(dim1,FPred)
 hold on
-plot(dim1,FPred+sigma,'g')
-plot(dim1,FPred-sigma,'g')
+semilogx(dim1,FPred+sigma,'g')
+semilogx(dim1,FPred-sigma,'g')
 ylim(z_lim)
 hold on
 
 next_point_mean = predictObjective(res,res.NextPoint);
 next_point = table2array(res.NextPoint);
-plot(next_point(1), next_point_mean,'.','Color',[0 0 0],'MarkerSize',20)
+semilogx(next_point(1), next_point_mean,'.','Color',[0 0 0],'MarkerSize',20)
 
 
 previous_points_duration = res.ObjectiveTrace;
 previous_points = table2array(res.XTrace);
-plot(previous_points(:,1), previous_points_duration,'.','Color',[0.7 0 0],'MarkerSize',20)
+semilogx(previous_points(:,1), previous_points_duration,'.','Color',[0.7 0 0],'MarkerSize',20)
 
 hold off
 
