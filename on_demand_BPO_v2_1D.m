@@ -348,7 +348,7 @@ s.Rate = fs;
 s.IsContinuous = true;
 
 global out_chunk in_chunk
-out_chunk = 0.5; % these are very long, 1/2 second would be better, but computation time of bayes opt is too slow to fit inside the loop
+out_chunk = 1.5; % these are very long, 1/2 second would be better, but computation time of bayes opt is too slow to fit inside the loop
 in_chunk = 1;
 
 n_ch_out = str2num(get(handles.ET_n_ch_out,'String'));
@@ -1076,7 +1076,7 @@ end
 
 for i_ch_out = 1:n_ch_out
     [res, gotMsg] = poll(q{1,i_ch_out}, .05); % should save each res
-    gotMsg=gotMsg
+    gotMsg=gotMsg;
 
     if gotMsg
 %         close all
@@ -1088,8 +1088,11 @@ for i_ch_out = 1:n_ch_out
         plot_bo_1D(res, range1, [0 40], 50)
         toc
         
-        eval(['res_ch_' num2str(i_ch_out) '_sz_' num2str(Seizure_Count(1,i_ch_out)) '= res;']) % this is sometimes too slow and breaks stops the whole works, longer out_chunk helps
-        save(save_mat_path,['res_ch_' num2str(i_ch_out) '_sz_' num2str(Seizure_Count(1,i_ch_out))],'-nocompression','-append') % this is sometimes too slow and breaks stops the whole works
+        res_name = ['res_ch_' num2str(i_ch_out) '_sz_' num2str(Seizure_Count(1,i_ch_out))];
+%         eval([res_name '= res;']) % this is sometimes too slow and breaks stops the whole works, longer out_chunk helps
+%         save(save_mat_path,['res_ch_' num2str(i_ch_out) '_sz_' num2str(Seizure_Count(1,i_ch_out))],'-nocompression','-append') % this is sometimes too slow and breaks stops the whole works
+        
+        f = parfeval(@save_wrapper,0,save_mat_path,res_name,res);   
         
         next_freq(1,i_ch_out) = res.NextPoint{1,1};
         next_amp(1,i_ch_out) = str2num(get(handles.ET_AmplitudeRange,'String'));
@@ -1104,6 +1107,13 @@ disp(num2str(Seizure_Duration))
 
 disp('duration_amp_freq = ')
 disp(num2str(duration_amp_freq))
+
+function save_wrapper(save_mat_path, var_name, var)
+
+eval([var_name ' = var;']);
+
+save(save_mat_path, var_name, '-append')
+
 
 function BO_wrapper_1D(opt_freq, InitialX, InitialObjective, que)
 
