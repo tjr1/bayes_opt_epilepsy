@@ -22,7 +22,7 @@ function varargout = on_demand_BPO_v2_1D_log(varargin)
 
 % Edit the above text to modify the response to help on_demand_BPO_v2_1D_log
 
-% Last Modified by GUIDE v2.5 29-May-2018 13:50:30
+% Last Modified by GUIDE v2.5 08-Jun-2018 16:09:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -215,6 +215,9 @@ end
 try
     set(handles.ET_stim_scaling,'String',struc.ET_stim_scaling);
 end
+try
+    set(handles.ET_log,'String',struc.ET_log);
+end
 
 guidata(hObject,handles);
 
@@ -244,6 +247,7 @@ function save_settings(path, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+struc.ET_log=get(handles.ET_log,'String');
 struc.ET_open_loop=get(handles.ET_open_loop,'String');
 struc.ET_high_pass_filter=get(handles.ET_high_pass_filter,'String');
 struc.ET_low_pass_filter=get(handles.ET_low_pass_filter,'String');
@@ -436,7 +440,11 @@ clear data
 mf = matfile(save_mat_path,'Writable',true);
 
 %% specify optimized variables
-opt_freq = optimizableVariable('frequency',str2num(get(handles.ET_FrequencyRange,'String')),'Transform','log'); % Hz
+if str2num(get(handles.ET_log,'String'))==1 % log transfrom frequency
+    opt_freq = optimizableVariable('frequency',str2num(get(handles.ET_FrequencyRange,'String')),'Transform','log'); % log transfrom frequency
+else
+    opt_freq = optimizableVariable('frequency',str2num(get(handles.ET_FrequencyRange,'String'))); % Hz, linear scale frquency
+end
 % opt_amp = optimizableVariable('amplitude',str2num(get(handles.ET_AmplitudeRange,'String'))); % Volts?
 opt_amp = [];
 
@@ -463,7 +471,7 @@ for i_ch_out = 1:n_ch_out
             figure(i_ch_out)
     %         plot(res,@plotObjectiveModel) %  A_BPO_vis, would be good to make these into a video
             range1 = str2num(get(handles.ET_FrequencyRange,'String'));
-            plot_bo_1D(res, range1, [0 40], 50)
+            plot_bo_1D(res, range1, [0 40], 50, handles)
             toc
 
             next_freq(1,i_ch_out) = res.NextPoint{1,1};
@@ -1092,7 +1100,7 @@ for i_ch_out = 1:n_ch_out
 %         plot(res,@plotObjectiveModel) %  A_BPO_vis, would be good to make these into a video
         range1 = str2num(get(handles.ET_FrequencyRange,'String'));
 %         range2 = str2num(get(handles.ET_AmplitudeRange,'String'));
-        plot_bo_1D(res, range1, [0 40], 50)
+        plot_bo_1D(res, range1, [0 40], 50, handles)
         toc
         
 %         res_name = ['res_ch_' num2str(i_ch_out) '_sz_' num2str(Seizure_Count(1,i_ch_out))];
@@ -1420,20 +1428,36 @@ end
 function [z] = place_holder_fcn(x)
 z = x; % not actually used.
 
-function plot_bo_1D(res, range1, z_lim, n_points)
+function plot_bo_1D(res, range1, z_lim, n_points, handles)
 
-dim1 = linspace(range1(1), range1(2), n_points)';
+log_flag = str2num(get(handles.ET_log,'String'));
+
+if log_flag == 1
+    dim1 = logspace(log10(range1(1)), log10(range1(2)), n_points)';
+else
+    dim1 = linspace(range1(1), range1(2), n_points)';
+end
 
 % FPred = predict(res.ObjectiveFcnGP, grid);
 
 [FPred, sigma] = predictObjective(res,table(dim1,'VariableNames',{'frequency'}));
 
-semilogx(dim1,FPred)
-hold on
-semilogx(dim1,FPred+sigma,'g')
-semilogx(dim1,FPred-sigma,'g')
-ylim(z_lim)
-hold on
+
+if log_flag == 1
+    semilogx(dim1,FPred)
+    hold on
+    semilogx(dim1,FPred+sigma,'g')
+    semilogx(dim1,FPred-sigma,'g')
+    ylim(z_lim)
+    hold on
+else
+    plot(dim1,FPred)
+    hold on
+    plot(dim1,FPred+sigma,'g')
+    plot(dim1,FPred-sigma,'g')
+    ylim(z_lim)
+    hold on
+end
 
 next_point_mean = predictObjective(res,res.NextPoint);
 next_point = table2array(res.NextPoint);
@@ -1911,6 +1935,29 @@ function ET_stim_scaling_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function ET_stim_scaling_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to ET_stim_scaling (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function ET_log_Callback(hObject, eventdata, handles)
+% hObject    handle to ET_log (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of ET_log as text
+%        str2double(get(hObject,'String')) returns contents of ET_log as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function ET_log_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ET_log (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
