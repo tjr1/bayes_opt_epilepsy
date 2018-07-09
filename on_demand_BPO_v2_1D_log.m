@@ -565,6 +565,8 @@ end
 
 clear time numAvail
 
+save([handles.save_mat_path(1:end-4) '_restart.mat'])
+
 
 
 function ET_fs_Callback(hObject, eventdata, handles)
